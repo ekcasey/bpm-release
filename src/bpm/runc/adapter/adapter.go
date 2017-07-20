@@ -105,7 +105,7 @@ func (a *RuncAdapter) BuildSpec(
 	}
 
 	mounts := defaultMounts()
-	mounts = append(mounts, boshMounts(systemRoot, jobName, procName)...)
+	mounts = append(mounts, boshMounts(systemRoot, jobName, cfg.Name, user)...)
 	mounts = append(mounts, systemIdentityMounts()...)
 
 	var resources *specs.LinuxResources
@@ -175,13 +175,13 @@ func (a *RuncAdapter) BuildSpec(
 	}, nil
 }
 
-func boshMounts(systemRoot, jobName, procName string) []specs.Mount {
+func boshMounts(systemRoot, jobName, procName string, user specs.User) []specs.Mount {
 	return []specs.Mount{
 		{
 			Destination: filepath.Join(systemRoot, "data", jobName, procName),
 			Type:        "bind",
 			Source:      filepath.Join(systemRoot, "data", jobName, procName),
-			Options:     []string{"rbind", "rw"},
+			Options:     []string{"rbind", "rw", fmt.Sprintf("uid=%d", user.UID), fmt.Sprintf("gid=%d", user.GID)},
 		},
 		{
 			Destination: filepath.Join(systemRoot, "data", "packages"),
