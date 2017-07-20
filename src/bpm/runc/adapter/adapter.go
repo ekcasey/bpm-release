@@ -105,7 +105,7 @@ func (a *RuncAdapter) BuildSpec(
 	}
 
 	mounts := defaultMounts()
-	mounts = append(mounts, boshMounts(systemRoot, jobName, cfg.Name, user)...)
+	mounts = append(mounts, boshMounts(systemRoot, jobName, procName, user)...)
 	mounts = append(mounts, systemIdentityMounts()...)
 
 	var resources *specs.LinuxResources
@@ -133,6 +133,8 @@ func (a *RuncAdapter) BuildSpec(
 		}
 	}
 
+	hostname, _ := os.Hostname()
+
 	return specs.Spec{
 		Version: specs.Version,
 		Platform: specs.Platform{
@@ -143,7 +145,7 @@ func (a *RuncAdapter) BuildSpec(
 		Root: specs.Root{
 			Path: filepath.Join(bpm.BundlesRoot(), jobName, procName, "rootfs"),
 		},
-		Hostname: jobName,
+		Hostname: hostname,
 		Mounts:   mounts,
 		Linux: &specs.Linux{
 			MaskedPaths: []string{
@@ -193,7 +195,7 @@ func boshMounts(systemRoot, jobName, procName string, user specs.User) []specs.M
 			Destination: filepath.Join(systemRoot, "jobs", jobName),
 			Type:        "bind",
 			Source:      filepath.Join(systemRoot, "jobs", jobName),
-			Options:     []string{"rbind", "ro"},
+			Options:     []string{"rbind", "rw"},
 		},
 		{
 			Destination: filepath.Join(systemRoot, "packages"),
